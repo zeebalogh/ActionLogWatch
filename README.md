@@ -1,7 +1,7 @@
 # CountingActionParser
 The class enables to parse lines based on regular expressions and at the same time count pattern occurrences.
 
-##Example
+## Example
 Sample usage of the CountingParser is provided in the 'amavisParser' file. 
 Custom action was defined by the MySqlAction class.
 
