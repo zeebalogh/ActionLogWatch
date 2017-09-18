@@ -29,9 +29,9 @@ class MySqlAction(Action):
     """
     We need to execute the following SQL:
     INSERT INTO postfix_access (source, access, type)
-      SELECT * FROM (SELECT '134.255.239.53', 'REJECT', 'client') AS tmp
+      SELECT * FROM (SELECT 'X.X.X.X', 'REJECT', 'client') AS tmp
         WHERE NOT EXISTS (
-          SELECT source FROM postfix_access WHERE source = '134.255.239.53'
+          SELECT source FROM postfix_access WHERE source = 'X.X.X.X'
         ) LIMIT 1
 
     :return:
