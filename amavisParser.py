@@ -21,14 +21,14 @@ def main():
   """
 
   # Generic regexp patterns
-  ip_re = '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'  # Any IPv4 Address
+  IP_RE = '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'  # Any IPv4 Address RegExp
 
   # Setup Parsers
   amavisParser = \
     CountingParser('^(.+ [0-9]+ [0-9]{2}:[0-9]{2}:[0-9]{2}) (.+)', False, [  # "Sep 13 10:52:53 ..."
       CountingParser('^(.+ amavis\[[0-9]+\]\: \(.*\)) (.*)', False, [        # "host_name amavis[15415]: (15415-07) ..."
-        CountingParser('^Blocked SPAM, \[(' + ip_re + ')\] (\[' + ip_re + '\] .*)', True),  # "Blocked SPAM [IP] ..."
-        CountingParser('^Passed SPAMMY, \[(' + ip_re + ')\] (\[' + ip_re + '\] .*)', True), # "Passed SPAMMY [IP] ..."
+        CountingParser('^Blocked SPAM, \[(' + IP_RE + ')\] (\[' + IP_RE + '\] .*)', True),  # "Blocked SPAM [IP] ..."
+        CountingParser('^Passed SPAMMY, \[(' + IP_RE + ')\] (\[' + IP_RE + '\] .*)', True), # "Passed SPAMMY [IP] ..."
       ])
     ])
 
@@ -53,8 +53,8 @@ def main():
   # Create Action Rules
   ar = ActionRules(insertRejectClient)
   ar.addRule(operator.gt, 5)   # (key > 5)
-  ar.fireAgainstCounter(spamIpCounter)
-  ar.fireAgainstCounter(spammyIpCounter)
+  ar.fireRulesAgainstCounter(spamIpCounter)
+  ar.fireRulesAgainstCounter(spammyIpCounter)
 
 
 if __name__ == "__main__":

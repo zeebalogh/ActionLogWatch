@@ -2,6 +2,7 @@
 
 import os
 import re
+import operator
 import ConfigParser
 
 
@@ -174,9 +175,49 @@ class Action:
     pass
 
 
+class Rule:
+  """
+  Class to represent and fire a single rule.
+  """
+
+  def __init__(self, op, value):
+    """
+    :param op:    Operator from the 'operator' lib (i.e. lt, gt, ...)
+    :type  op:    operator
+
+    :param value: Value to which we will be comparing the key
+    """
+
+    self.op = op # Operator from the 'operator' lib (i.e. lt, gt, ..) https://docs.python.org/3/library/operator.html
+    self.value = value # Value to which we are comparing
+
+
+  def fire(self, key):
+    """
+    Try to match the key with the rule (operator op and value).
+      i.e.: op(key, value)
+
+    :param key: The key value to which we compare the rule
+
+    :return: Does any of the rules match? If yes return True, otherwise False
+    """
+
+    print "DEBUG op: " + str(self.op) + \
+          ", key: "    + str(key) + \
+          ", value: "  + str(self.value) + \
+          ", fire: "   + str(self.op(key, self.value))
+
+    if self.op(key, self.value):
+      return True
+
+    return False
+
+
 class ActionRules:
   """
   ActionRules enables to define rules which are used to check against a defined key value.
+
+  :type rules: Rule[]
   """
   rules = []
 
@@ -189,21 +230,22 @@ class ActionRules:
     """
     self.action = action
 
+
   def addRule(self, op, value):
     """
     Add a rule to be matched.
 
     :param op:    Operator from the 'operator' lib (i.e. lt, gt, ...)
-    :type  op: Operator
+    :type  op:    Operator
 
     :param value: Value to which we will be comparing the key
 
     :return:
     """
-    self.rules.append([op, value])
+    self.rules.append(Rule(op, value))
 
 
-  def fire(self, key):
+  def fireRules(self, key):
     """
     Go through every rule. If any of the rules match, return true.
 
@@ -212,18 +254,14 @@ class ActionRules:
     :return: Does any of the rules match? If yes return True, otherwise False
     """
     for rule in self.rules:
-      op    = rule[0]  # Operator from the 'operator' lib (i.e. lt, gt, ..) https://docs.python.org/3/library/operator.html
-      value = rule[1]  # Value to which we are comparing
 
-      print "DEBUG op: " + str(op) + ", key: " + str(key) + ", value: " + str(value) + ", fire: " + str(op(key, value))
-
-      if op(key, value):
+      if rule.fire(key):
         return True
 
     return False
 
 
-  def fireAgainstCounter(self, counter):
+  def fireRulesAgainstCounter(self, counter):
     """
     Try to fire rules against each counter.
 
@@ -235,7 +273,7 @@ class ActionRules:
     at_least_one_fired = False
 
     for key in counter.count:
-      if self.fire(counter.count[key]):  # If any of the rules fire against the 'key'
+      if self.fireRules(counter.count[key]):  # If any of the rules fire against the 'key'
         self.action.execute(key)
         at_least_one_fired = True
 
