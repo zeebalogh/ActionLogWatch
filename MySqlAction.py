@@ -21,6 +21,7 @@ class MySqlAction(Action):
       user=self.config.get(section, "USER"),
       passwd=self.config.get(section, "PW"),
       host=self.config.get(section, "HOST"),
+      port=self.config.get(section, "PORT")
     )
 
     self.cur = self.conn.cursor()
