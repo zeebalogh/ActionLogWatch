@@ -123,6 +123,12 @@ class Counter:
       print self.count[key]
 
 
+  def printSorted(self):
+    sc = sorted(self.count, key = self.count.get, reverse = True)
+    for key in sc:
+      print key + ": ",
+      print self.count[key]
+
 class Action:
   """
   Action enables us to make any action based on key and value

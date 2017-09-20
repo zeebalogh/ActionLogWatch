@@ -2,6 +2,8 @@
 
 import sys
 import operator
+from __builtin__ import sorted
+
 from CountingActionParser import CountingParser, ActionRules
 from MySqlAction import MySqlAction
 
@@ -21,11 +23,12 @@ def main():
   """
 
   # Generic regexp patterns
-  IP_RE = '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'  # Any IPv4 Address RegExp
+  HMS_RE = '[0-9]{2}:[0-9]{2}:[0-9]{2}'      # HH:MM:SS
+  IP_RE  = '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'  # Any IPv4 Address RegExp
 
   # Setup Parsers
   amavisParser = \
-    CountingParser('^(.+ [0-9]+ [0-9]{2}:[0-9]{2}:[0-9]{2}) (.+)', False, [  # "Sep 13 10:52:53 ..."
+    CountingParser('^(.+ [0-9]+ ' + HMS_RE + ') (.+)', False, [  # "Sep 13 10:52:53 ..."
       CountingParser('^(.+ amavis\[[0-9]+\]\: \(.*\)) (.*)', False, [        # "host_name amavis[15415]: (15415-07) ..."
         CountingParser('^Blocked SPAM, \[(' + IP_RE + ')\] (\[' + IP_RE + '\] .*)', True),  # "Blocked SPAM [IP] ..."
         CountingParser('^Passed SPAMMY, \[(' + IP_RE + ')\] (\[' + IP_RE + '\] .*)', True), # "Passed SPAMMY [IP] ..."
@@ -39,22 +42,24 @@ def main():
 
   # Print out the found matches
   spamIpCounter   = amavisParser.next[0].next[0].counter
-  print "SPAM: "
-  spamIpCounter.printAll()
-
   spammyIpCounter = amavisParser.next[0].next[1].counter
-  print "SPAMMY: "
-  spammyIpCounter.printAll()
+
+  # DEBUG
+  print "SPAM: "; spamIpCounter.printSorted()
+  print "SPAMMY: "; spammyIpCounter.printSorted()
 
   # Define an Action
   insertRejectClient = MySqlAction("/etc/host2u/parser_mysql_action.conf")
   insertRejectClient.prepare("MySQL")
 
   # Create Action Rules
-  ar = ActionRules(insertRejectClient)
-  ar.addRule(operator.gt, 5)   # (key > 5)
-  ar.fireRulesAgainstCounter(spamIpCounter)
-  ar.fireRulesAgainstCounter(spammyIpCounter)
+  arSpam = ActionRules(insertRejectClient)
+  arSpam.addRule(operator.gt, 2)   # (key > 2)
+  arSpam.fireRulesAgainstCounter(spamIpCounter)
+
+  arSpammy = ActionRules(insertRejectClient)
+  arSpammy.addRule(operator.gt, 3) # (key > 3)
+  arSpammy.fireRulesAgainstCounter(spammyIpCounter)
 
 
 if __name__ == "__main__":
